@@ -4,6 +4,7 @@ import App from "./App.vue";
 import apiFactory from "./api/apiFactory";
 import tracker from "./api/tracker";
 import preTransaction from "./mixins/preTransaction";
+import store from './store/index'
 
 import loader from './plugins/loader'
 import notif from './plugins/notification'
@@ -26,4 +27,5 @@ Vue.config.productionTip = false;
 
 new Vue({
   render: (h) => h(App),
+  store
 }).$mount("#app");

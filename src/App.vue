@@ -23,6 +23,8 @@
         </div>
       </template>
 
+      <h1 v-if="err.length > 0">{{ err }}</h1>
+
       <overlay v-if="disableAccess && type">
         <div class="bg-white">
           <h4 class="not-margin">
@@ -44,7 +46,7 @@
           </div>
           <template v-if="type === 'account'">
             <div class="footer-dialog">
-              <button @click="handleDisable" block>Confirm</button>
+              <button @click="login" block>Confirm</button>
             </div>
           </template>
         </div>
@@ -64,7 +66,6 @@
 import { toDecimal } from "web3-utils";
 import metamask from "./assets/metamask.svg";
 import logo from "./assets/logo.png";
-import Vue from "vue";
 
 export default {
   name: "App",
@@ -72,18 +73,23 @@ export default {
     return {
       metamask,
       logo,
-      web3: {},
       disableAccess: false,
       type: null,
       networkName: process.env.VUE_APP_NETWORK_NAME,
-      networkId: null,
-      loggedIn: false,
       dontShowMetamask: false,
       metamaskNotFound: false,
+      loggedIn: false,
+      err: "",
     };
   },
   methods: {
-    register() {
+    handleResize() {
+      this.$store.commit("setWindowSize", {
+        x: window.innerWidth,
+        y: window.innerHeight,
+      });
+    },
+    exampleTransaction() {
       this.$loading.show();
       this.preTransaction("methodName", ["arguments"])
         .then((txnHash) => {
@@ -92,10 +98,7 @@ export default {
           this.$tracker.$on("success", (hash) => {
             // this line is important, you may have set multiple event listeners in your dApp so it is important to check txnHash and ensure about related txn result
             if (hash === txnHash) {
-              this.$notif.push("Account registered successfully", "success");
-              this.disableAccess = false;
-              this.type = null;
-              this.isRegistered = true;
+              this.$notif.push("Successfully done", "success");
               this.$loading.hide();
             }
           });
@@ -117,57 +120,63 @@ export default {
         });
     },
     login() {
-      this.handleMetamask(() => {
-        this.loggedIn = true;
-        this.$loading.hide();
-      });
-    },
-    handleDisable() {
-      this.handleMetamask(() => {
-        this.loggedIn = true;
-        this.disableAccess = false;
-        this.type = null;
-        this.$loading.hide();
-      });
-    },
-    handleMetamask(callback) {
       this.$loading.show();
-      const getWeb3 = import("./api/web3");
-      getWeb3
-        .then((result) => result.default(this.networkId))
-        .then((result) => {
-          Vue.prototype.$web3 = result.web3;
-          this.$tracker.setWeb3(result.web3);
-          Vue.prototype.$smartContract = result.smartContractInstance;
-          this.web3 = {
-            address: result.address,
-            isInjected: true,
-          };
-          if (result.networkId) {
-            this.networkId = result.networkId;
-          }
-          callback();
-        })
-        .catch((e) => {
+      this.$store.dispatch("registerWeb3", {
+        notif: (msg) => {
           this.$loading.hide();
-          if (e == "404") {
-            this.$notif.push("Metamask not found", "danger");
-          } else if (e == "400") {
-            this.$notif.push("Network is wrong", "danger");
-          } else {
-            this.$notif.push("Network error", "danger");
-          }
-        });
+          this.err = msg;
+          this.$notif.push(msg, "danger");
+        },
+        onReady: () => {
+          this.$tracker.setWeb3(this.$web3);
+          this.$loading.hide();
+          this.loggedIn = true;
+          this.err = "";
+        },
+      });
     },
+    // handleMetamask(callback) {
+    //   this.$loading.show();
+    //   const getWeb3 = import("./api/web3");
+    //   getWeb3
+    //     .then((result) => result.default(this.networkId))
+    //     .then((result) => {
+    //       Vue.prototype.$web3 = result.web3;
+    //       this.$tracker.setWeb3(result.web3);
+    //       Vue.prototype.$smartContract = result.smartContractInstance;
+    //       this.web3 = {
+    //         address: result.address,
+    //         isInjected: true,
+    //       };
+    //       if (result.networkId) {
+    //         this.networkId = result.networkId;
+    //       }
+    //       callback();
+    //     })
+    //     .catch((e) => {
+    //       this.dontShowMetamask = false;
+    //       this.$loading.hide();
+    //       if (e == "404") {
+    //         this.$notif.push("Metamask not found", "danger");
+    //       } else if (e == "400") {
+    //         this.$notif.push("Network is wrong", "danger");
+    //       } else {
+    //         this.$notif.push("Network error", "danger");
+    //       }
+    //     });
+    // },
   },
   mounted() {
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", () => {
-        // because of metamask mobile we have to reload page
+        // if (this.$store.state.web3.isInjected) {
+        // because of metamask mobile version we have to reload page
         location.reload();
+        // }
       });
       window.ethereum.on("chainChanged", (chainId) => {
-        this.networkId = toDecimal(chainId);
+        // if (this.$store.state.web3.isInjected) {
+        this.$store.commit("networkChanged", toDecimal(chainId));
         if (toDecimal(chainId) == process.env.VUE_APP_NETWORK_ID) {
           this.disableAccess = false;
           this.type = null;
@@ -175,9 +184,9 @@ export default {
         } else {
           this.disableAccess = true;
           this.type = "network";
-          this.loggedIn = false;
-          this.web3 = {};
+          this.$store.commit("registerWeb3Instance", {});
         }
+        // }
       });
       if (window.ethereum.selectedAddress) {
         this.dontShowMetamask = true;
@@ -191,6 +200,12 @@ export default {
     notifications: () => import("./components/global/notifications"),
     loader: () => import("./components/global/loader"),
     overlay: () => import("./components/global/overlay"),
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.handleResize);
   },
 };
 </script>
