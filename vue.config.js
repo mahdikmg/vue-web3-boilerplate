@@ -1,8 +1,15 @@
+const path = require("path");
+
 module.exports = {
-    // to deploy, uncomment these lines
-    // configureWebpack: {
-    //   mode: 'production'
-    // },
-    publicPath: process.env.VUE_APP_PUBLIC_PATH,
-    // outputDir: 'dist/dashboard'
-}
+  publicPath: process.env.VUE_APP_PUBLIC_PATH,
+  configureWebpack: {
+    resolve: {
+      alias: {
+        "~": path.resolve(__dirname, "src/"),
+      },
+    },
+    // mode: 'production'
+  },
+
+  // outputDir: 'dist/dashboard'
+};

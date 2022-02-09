@@ -2,7 +2,7 @@
   <div id="app">
     <div v-if="!metamaskNotFound">
       <template v-if="loggedIn">
-        <h1>You are logged in</h1>
+        <router-view />
       </template>
       <template v-else-if="!dontShowMetamask">
         <div class="container">
@@ -64,8 +64,8 @@
 
 <script>
 import { toDecimal } from "web3-utils";
-import metamask from "./assets/metamask.svg";
-import logo from "./assets/logo.png";
+import metamask from "~/assets/metamask.svg";
+import logo from "~/assets/logo.png";
 
 export default {
   name: "App",
@@ -135,36 +135,6 @@ export default {
         },
       });
     },
-    // handleMetamask(callback) {
-    //   this.$loading.show();
-    //   const getWeb3 = import("./api/web3");
-    //   getWeb3
-    //     .then((result) => result.default(this.networkId))
-    //     .then((result) => {
-    //       Vue.prototype.$web3 = result.web3;
-    //       this.$tracker.setWeb3(result.web3);
-    //       Vue.prototype.$smartContract = result.smartContractInstance;
-    //       this.web3 = {
-    //         address: result.address,
-    //         isInjected: true,
-    //       };
-    //       if (result.networkId) {
-    //         this.networkId = result.networkId;
-    //       }
-    //       callback();
-    //     })
-    //     .catch((e) => {
-    //       this.dontShowMetamask = false;
-    //       this.$loading.hide();
-    //       if (e == "404") {
-    //         this.$notif.push("Metamask not found", "danger");
-    //       } else if (e == "400") {
-    //         this.$notif.push("Network is wrong", "danger");
-    //       } else {
-    //         this.$notif.push("Network error", "danger");
-    //       }
-    //     });
-    // },
   },
   mounted() {
     if (window.ethereum) {
