@@ -1,5 +1,9 @@
 # vue2-web3-metamask
 
+A simple boilerplate to start developing your dApps faster.<br/>
+Feel free to contribute and add cool features.<br/>
+Also you can contact me using my email address: [mahdikmg1@gmail.com](mailto:mahdikmg1@gmail.com)
+
 ## Project setup
 
 ```
