@@ -1,13 +1,15 @@
 import Web3 from "web3";
 
+// TODO: use constant for errors
+
 export default async (currentChainId) => {
   // Check if MetaMask is installed
   if (!window.ethereum) {
-    throw new Error("404"); // MetaMask not found
+    throw "404"; // MetaMask not found
   }
 
   if (!window.ethereum.isMetaMask) {
-    throw new Error("provider is not metamask");
+    throw "provider is not metamask";
   }
 
   // Request account access
@@ -19,7 +21,7 @@ export default async (currentChainId) => {
   // Check connection
   const isConnected = await web3.eth.net.isListening();
   if (!isConnected) {
-    throw new Error("Is not connected");
+    throw "Is not connected";
   }
 
   // Get network ID
@@ -29,7 +31,7 @@ export default async (currentChainId) => {
     (networkId != process.env.VUE_APP_NETWORK_ID ||
       (currentChainId !== null && currentChainId !== undefined))
   ) {
-    throw new Error("400"); // Wrong network
+    throw "400"; // Wrong network
   }
 
   // Get accounts
@@ -43,6 +45,9 @@ export default async (currentChainId) => {
   const response = await fetch(
     `${process.env.VUE_APP_PUBLIC_PATH}${process.env.VUE_APP_ABI_FILE_NAME}`
   );
+  if (!response.ok) {
+    throw "Couldn't fetch contract file";
+  }
   const abi = await response.json();
 
   const smartContractInstance = new web3.eth.Contract(

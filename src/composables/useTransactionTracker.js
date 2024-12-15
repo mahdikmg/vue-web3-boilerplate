@@ -1,7 +1,9 @@
-import createTransactionTracker from "@/utils/tracker";
+import createTransactionTracker from "~/api/tracker";
+import { inject } from "vue";
 
-export function useTransactionTracker(web3) {
-  const tracker = createTransactionTracker(web3);
+const useTransactionTracker = () => {
+  const $web3 = inject("web3", null);
+  const tracker = createTransactionTracker($web3);
 
   return async (txHash) => {
     return new Promise((resolve, reject) => {
@@ -11,4 +13,6 @@ export function useTransactionTracker(web3) {
       });
     });
   };
-}
+};
+
+export default useTransactionTracker;

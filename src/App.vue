@@ -4,7 +4,7 @@
       <template v-if="loggedIn">
         <router-view />
       </template>
-      <template v-else-if="!dontShowMetamask">
+      <template v-else-if="showMetamask">
         <div class="container">
           <div class="row">
             <div
@@ -53,7 +53,7 @@
       </overlay>
     </div>
     <div v-else>
-      <h1>Install Metamask</h1>
+      <h1>Metamask not found, please install it.</h1>
     </div>
 
     <loading />
@@ -65,56 +65,24 @@
 import { ref, onMounted, inject } from 'vue'
 import { toDecimal } from "web3-utils"
 import metamask from "~/assets/metamask.svg"
-// import logo from "~/assets/logo.png"
 import notifications from "./components/global/notifications"
 import loading from "./components/global/loading"
 import overlay from "./components/global/overlay"
-import { usePreTransaction } from './composables/usePreTransaction'
 import useWeb3Store from './store/web3'
 
 const web3Store = useWeb3Store()
-const preTransaction = usePreTransaction()
 const $loading = inject('loading')
-const $tracker = inject('tracker')
 const $notif = inject('notif')
-const $web3 = inject('web3')
 
 const disableAccess = ref(false)
 const type = ref(null)
 const networkName = ref(process.env.VUE_APP_NETWORK_NAME)
-const dontShowMetamask = ref(false)
+const showMetamask = ref(true)
 const metamaskNotFound = ref(false)
 const loggedIn = ref(false)
 const err = ref("")
 
 // Methods
-// eslint-disable-next-line no-unused-vars
-const exampleTransaction = () => {
-  $loading.show()
-  preTransaction("methodName", ["arguments"])
-    .then((txnHash) => {
-      $tracker.checkTxn(txnHash)
-      $tracker.$on("success", (hash) => {
-        if (hash === txnHash) {
-          $notif.push("Successfully done", "success")
-          $loading.hide()
-        }
-      })
-      $tracker.$on("failed", (hash) => {
-        if (hash === txnHash) {
-          $notif.push("Transaction reverted", "danger")
-          $loading.hide()
-        }
-      })
-    })
-    .catch((err) => {
-      $loading.hide()
-      if (!err.message && !err.message.includes("User denied transaction signature")) {
-        $notif.push("Connection error", "danger")
-      }
-    })
-}
-
 const login = () => {
   $loading.show()
   web3Store.registerWeb3({
@@ -124,7 +92,6 @@ const login = () => {
       $notif.push(msg, "danger")
     },
     onReady: () => {
-      $tracker.setWeb3($web3)
       $loading.hide()
       loggedIn.value = true
       err.value = ""
@@ -153,7 +120,7 @@ onMounted(() => {
     })
     
     if (window.ethereum.selectedAddress) {
-      dontShowMetamask.value = true
+      showMetamask.value = false
       login()
     }
   } else {
