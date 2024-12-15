@@ -4,7 +4,7 @@ const createTransactionTracker = (web3) => {
       const receipt = await web3.eth.getTransactionReceipt(txHash);
 
       if (!receipt) {
-        // Transaction not yet mined, check again in 2 seconds
+        // Transaction not mined yet, check again in 2 seconds
         setTimeout(
           () => checkTransaction(txHash, { onSuccess, onError }),
           2000

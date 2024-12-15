@@ -1,7 +1,7 @@
-import { useStore } from 'vuex'
+import useWeb3Store from "../store/web3"
 
 export function useOffChain() {
-    const store = useStore()
+    const web3Store = useWeb3Store()
 
     return () => {
         let data = JSON.stringify({
@@ -28,15 +28,15 @@ export function useOffChain() {
             domain: {
                 name: 'MailSent',
                 version: '1',
-                chainId: '0x' + parseInt(store.state.web3.networkId).toString(16),
+                chainId: '0x' + parseInt(web3Store.networkId).toString(16),
                 verifyingContract: process.env.VUE_APP_SMART_CONTRACT_ADDRESS,
                 salt: '0123456789'
             },
             message: {
-                signer: store.state.web3.address,
+                signer: web3Store.address,
                 method: "validateMail",
                 object: {
-                    from: store.state.web3.address,
+                    from: web3Store.address,
                     to: process.env.VUE_APP_SMART_CONTRACT_ADDRESS,
                     contents: ''
                 }
@@ -45,7 +45,7 @@ export function useOffChain() {
 
         return window.ethereum.request({
             method: 'eth_signTypedData_v4',
-            params: [store.state.web3.address, data]
+            params: [web3Store.address, data]
         })
     }
 }

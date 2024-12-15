@@ -62,8 +62,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, inject } from 'vue'
-import { useStore } from 'vuex'
+import { ref, onMounted, inject } from 'vue'
 import { toDecimal } from "web3-utils"
 import metamask from "~/assets/metamask.svg"
 // import logo from "~/assets/logo.png"
@@ -71,8 +70,9 @@ import notifications from "./components/global/notifications"
 import loading from "./components/global/loading"
 import overlay from "./components/global/overlay"
 import { usePreTransaction } from './composables/usePreTransaction'
+import useWeb3Store from './store/web3'
 
-const store = useStore()
+const web3Store = useWeb3Store()
 const preTransaction = usePreTransaction()
 const $loading = inject('loading')
 const $tracker = inject('tracker')
@@ -88,13 +88,6 @@ const loggedIn = ref(false)
 const err = ref("")
 
 // Methods
-const handleResize = () => {
-  store.commit("setWindowSize", {
-    x: window.innerWidth,
-    y: window.innerHeight,
-  })
-}
-
 // eslint-disable-next-line no-unused-vars
 const exampleTransaction = () => {
   $loading.show()
@@ -124,7 +117,7 @@ const exampleTransaction = () => {
 
 const login = () => {
   $loading.show()
-  store.dispatch("registerWeb3", {
+  web3Store.registerWeb3({
     notif: (msg) => {
       $loading.hide()
       err.value = msg
@@ -147,7 +140,7 @@ onMounted(() => {
     })
     
     window.ethereum.on("chainChanged", (chainId) => {
-      store.commit("networkChanged", toDecimal(chainId))
+      web3Store.networkChanged(toDecimal(chainId))
       if (toDecimal(chainId) == process.env.VUE_APP_NETWORK_ID) {
         disableAccess.value = false
         type.value = null
@@ -155,7 +148,7 @@ onMounted(() => {
       } else {
         disableAccess.value = true
         type.value = "network"
-        store.commit("registerWeb3Instance", {})
+        web3Store.registerWeb3Instance({})
       }
     })
     
@@ -166,12 +159,6 @@ onMounted(() => {
   } else {
     metamaskNotFound.value = true
   }
-  
-  window.addEventListener("resize", handleResize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener("resize", handleResize)
 })
 </script>
 

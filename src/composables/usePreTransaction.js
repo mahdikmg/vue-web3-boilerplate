@@ -1,21 +1,21 @@
 import { inject } from 'vue'
-import { useStore } from 'vuex'
 import { toHex } from 'web3-utils'
+import useWeb3Store from '../store/web3'
 
 export function usePreTransaction() {
-    const store = useStore()
+    const web3Store = useWeb3Store()
     const web3 = inject('web3')
     const smartContract = inject('smartContract')
 
     return (method, args, payable) => {
         return new Promise((resolve, reject) => {
-            web3.eth.getTransactionCount(store.state.web3.address)
+            web3.eth.getTransactionCount(web3Store.address)
                 .then((nonce) => {
                     let data = smartContract.methods[method](...args).encodeABI()
                     let txnParams = {
                         "nonce": toHex(nonce),
-                        "chainId": store.state.web3.networkId,
-                        "from": store.state.web3.address,
+                        "chainId": web3Store.networkId,
+                        "from": web3Store.address,
                         "to": process.env.VUE_APP_SMART_CONTRACT_ADDRESS,
                         "value": payable ? payable : 0,
                         "data": data

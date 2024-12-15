@@ -1,7 +1,7 @@
 import { createApp } from "vue";
 import App from "~/App.vue";
 
-import store from "~/store/index";
+import { createPinia } from "pinia";
 import router from "~/router/index";
 import loading from "~/plugins/loading";
 import notif from "~/plugins/notification";
@@ -11,7 +11,7 @@ import "~/assets/css/bootstrap-utilities.min.css";
 
 const app = createApp(App);
 
-app.use(store);
+app.use(createPinia());
 app.use(router);
 app.use(loading, {
   store: new loading.Store(),
