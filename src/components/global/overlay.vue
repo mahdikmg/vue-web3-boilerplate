@@ -4,10 +4,7 @@
   </div>
 </template>
 
-<script functional>
-export default {
-  name: "overlay",
-};
+<script setup>
 </script>
 
 <style scoped>

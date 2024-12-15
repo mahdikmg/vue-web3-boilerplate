@@ -1,16 +1,12 @@
-import Vue from "vue";
+import { reactive } from 'vue'
 
 class Notif {
   constructor() {
-    this.VM = new Vue({
-      data: () => ({
-        notifs: [],
-      }),
-    });
+    this.state = reactive({
+      notifs: [],
+    })
   }
-  get state() {
-    return this.VM.$data;
-  }
+
   push(msg, color) {
     this.state.notifs.push({
       msg,
@@ -21,23 +17,27 @@ class Notif {
           ? "green darken-3"
           : "",
       show: true,
-    });
-    setTimeout(() => this.remove(), 5000);
+    })
+    setTimeout(() => this.remove(), 5000)
   }
+
   remove(index = this.state.notifs.length - 1) {
-    this.state.notifs[index].show = false;
-    this.state.notifs.splice(index, 1);
+    this.state.notifs[index].show = false
+    this.state.notifs.splice(index, 1)
   }
 }
 
 const notif = {
   Store: Notif,
-  install(Vue, options) {
-    Vue.mixin({
-      beforeCreate() {
-        this.$notif = options.store;
-      },
-    });
-  },
-};
-export default notif;
+  install(app, options) {
+    const notifInstance = options.store
+    
+    // Make the notification service available globally
+    app.config.globalProperties.$notif = notifInstance
+    
+    // Provide the notification service for composition API usage
+    app.provide('notif', notifInstance)
+  }
+}
+
+export default notif

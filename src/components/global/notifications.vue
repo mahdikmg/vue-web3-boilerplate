@@ -1,12 +1,11 @@
 <template>
   <div class="notifHolder">
-    <template v-for="(notif, index) in $notif.state.notifs">
+    <template v-for="(notif, index) in notif.state.notifs" :key="index">
       <div
         v-if="notif.show"
         :class="['notif', notif.color]"
         :style="`bottom: ${index * 60}px;`"
-        @click="() => $notif.remove(index)"
-        :key="index"
+        @click="() => notif.remove(index)"
       >
         <p>{{ notif.msg }}</p>
       </div>
@@ -14,10 +13,10 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "notifications",
-};
+<script setup>
+import { inject } from 'vue'
+
+const notif = inject('notif')
 </script>
 
 <style scoped>

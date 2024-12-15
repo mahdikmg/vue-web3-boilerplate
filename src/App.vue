@@ -56,128 +56,123 @@
       <h1>Install Metamask</h1>
     </div>
 
-    <loader />
-
+    <loading />
     <notifications />
   </div>
 </template>
 
-<script>
-import { toDecimal } from "web3-utils";
-import metamask from "~/assets/metamask.svg";
-import logo from "~/assets/logo.png";
+<script setup>
+import { ref, onMounted, onUnmounted, inject } from 'vue'
+import { useStore } from 'vuex'
+import { toDecimal } from "web3-utils"
+import metamask from "~/assets/metamask.svg"
+// import logo from "~/assets/logo.png"
+import notifications from "./components/global/notifications"
+import loading from "./components/global/loading"
+import overlay from "./components/global/overlay"
+import { usePreTransaction } from './composables/usePreTransaction'
 
-export default {
-  name: "App",
-  data() {
-    return {
-      metamask,
-      logo,
-      disableAccess: false,
-      type: null,
-      networkName: process.env.VUE_APP_NETWORK_NAME,
-      dontShowMetamask: false,
-      metamaskNotFound: false,
-      loggedIn: false,
-      err: "",
-    };
-  },
-  methods: {
-    handleResize() {
-      this.$store.commit("setWindowSize", {
-        x: window.innerWidth,
-        y: window.innerHeight,
-      });
-    },
-    exampleTransaction() {
-      this.$loading.show();
-      this.preTransaction("methodName", ["arguments"])
-        .then((txnHash) => {
-          // give txnHash to tracker and set your event handlers to handle result
-          this.$tracker.checkTxn(txnHash);
-          this.$tracker.$on("success", (hash) => {
-            // this line is important, you may have set multiple event listeners in your dApp so it is important to check txnHash and ensure about related txn result
-            if (hash === txnHash) {
-              this.$notif.push("Successfully done", "success");
-              this.$loading.hide();
-            }
-          });
-          this.$tracker.$on("failed", (hash) => {
-            if (hash === txnHash) {
-              this.$notif.push("Transaction reverted", "danger");
-              this.$loading.hide();
-            }
-          });
-        })
-        .catch((err) => {
-          this.$loading.hide();
-          if (
-            !err.message &&
-            !err.message.includes("User denied transaction signature")
-          ) {
-            this.$notif.push("Connection error", "danger");
-          }
-        });
-    },
-    login() {
-      this.$loading.show();
-      this.$store.dispatch("registerWeb3", {
-        notif: (msg) => {
-          this.$loading.hide();
-          this.err = msg;
-          this.$notif.push(msg, "danger");
-        },
-        onReady: () => {
-          this.$tracker.setWeb3(this.$web3);
-          this.$loading.hide();
-          this.loggedIn = true;
-          this.err = "";
-        },
-      });
-    },
-  },
-  mounted() {
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", () => {
-        // if (this.$store.state.web3.isInjected) {
-        // because of metamask mobile version we have to reload page
-        location.reload();
-        // }
-      });
-      window.ethereum.on("chainChanged", (chainId) => {
-        // if (this.$store.state.web3.isInjected) {
-        this.$store.commit("networkChanged", toDecimal(chainId));
-        if (toDecimal(chainId) == process.env.VUE_APP_NETWORK_ID) {
-          this.disableAccess = false;
-          this.type = null;
-          this.login();
-        } else {
-          this.disableAccess = true;
-          this.type = "network";
-          this.$store.commit("registerWeb3Instance", {});
+const store = useStore()
+const preTransaction = usePreTransaction()
+const $loading = inject('loading')
+const $tracker = inject('tracker')
+const $notif = inject('notif')
+const $web3 = inject('web3')
+
+const disableAccess = ref(false)
+const type = ref(null)
+const networkName = ref(process.env.VUE_APP_NETWORK_NAME)
+const dontShowMetamask = ref(false)
+const metamaskNotFound = ref(false)
+const loggedIn = ref(false)
+const err = ref("")
+
+// Methods
+const handleResize = () => {
+  store.commit("setWindowSize", {
+    x: window.innerWidth,
+    y: window.innerHeight,
+  })
+}
+
+// eslint-disable-next-line no-unused-vars
+const exampleTransaction = () => {
+  $loading.show()
+  preTransaction("methodName", ["arguments"])
+    .then((txnHash) => {
+      $tracker.checkTxn(txnHash)
+      $tracker.$on("success", (hash) => {
+        if (hash === txnHash) {
+          $notif.push("Successfully done", "success")
+          $loading.hide()
         }
-        // }
-      });
-      if (window.ethereum.selectedAddress) {
-        this.dontShowMetamask = true;
-        this.login();
+      })
+      $tracker.$on("failed", (hash) => {
+        if (hash === txnHash) {
+          $notif.push("Transaction reverted", "danger")
+          $loading.hide()
+        }
+      })
+    })
+    .catch((err) => {
+      $loading.hide()
+      if (!err.message && !err.message.includes("User denied transaction signature")) {
+        $notif.push("Connection error", "danger")
       }
-    } else {
-      this.metamaskNotFound = true;
+    })
+}
+
+const login = () => {
+  $loading.show()
+  store.dispatch("registerWeb3", {
+    notif: (msg) => {
+      $loading.hide()
+      err.value = msg
+      $notif.push(msg, "danger")
+    },
+    onReady: () => {
+      $tracker.setWeb3($web3)
+      $loading.hide()
+      loggedIn.value = true
+      err.value = ""
+    },
+  })
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  if (window.ethereum) {
+    window.ethereum.on("accountsChanged", () => {
+      location.reload()
+    })
+    
+    window.ethereum.on("chainChanged", (chainId) => {
+      store.commit("networkChanged", toDecimal(chainId))
+      if (toDecimal(chainId) == process.env.VUE_APP_NETWORK_ID) {
+        disableAccess.value = false
+        type.value = null
+        login()
+      } else {
+        disableAccess.value = true
+        type.value = "network"
+        store.commit("registerWeb3Instance", {})
+      }
+    })
+    
+    if (window.ethereum.selectedAddress) {
+      dontShowMetamask.value = true
+      login()
     }
-  },
-  components: {
-    notifications: () => import("./components/global/notifications"),
-    loader: () => import("./components/global/loader"),
-    overlay: () => import("./components/global/overlay"),
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  destroyed() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-};
+  } else {
+    metamaskNotFound.value = true
+  }
+  
+  window.addEventListener("resize", handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize)
+})
 </script>
 
 <style>

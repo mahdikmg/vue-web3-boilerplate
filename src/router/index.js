@@ -1,22 +1,18 @@
-import Vue from "vue";
-import Router from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
-Vue.use(Router);
-
-const router = new Router({
-  mode: "history",
-  base: process.env.VUE_APP_PUBLIC_PATH,
+const router = createRouter({
+  history: createWebHistory(process.env.VUE_APP_PUBLIC_PATH),
   scrollBehavior() {
-    return { x: 0, y: 0 };
+    return { top: 0, left: 0 };
   },
   routes: [
     {
-      path: "",
+      path: "/",
       name: "homepage",
       component: () => import("~/pages/index"),
     },
     {
-      path: "*",
+      path: "/:pathMatch(.*)*",
       name: "404",
       component: () => import("~/pages/404"),
     },

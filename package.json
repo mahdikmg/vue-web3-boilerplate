@@ -1,9 +1,9 @@
 {
-  "name": "vue2-web3-metamask",
+  "name": "vue-web3-boilerplate",
   "version": "0.1.0",
   "private": false,
-  "description": "A vue2-web3-metamask boilerplate to start developing your dApps faster.",
-  "author": "Mahdikmg <mahdikmg1@gmail.com>",
+  "description": "A vue-web3-boilerplate boilerplate to start developing your dApps faster.",
+  "author": "Mehdi Ghasemi <mahdikmg1@gmail.com>",
   "license": "MIT",
   "keywords": [
     "vue",
@@ -12,11 +12,12 @@
     "vue-web3 boilerplate",
     "boilerplate",
     "metamask boilerplate",
-    "vue boilerplate"
+    "vue boilerplate",
+    "web3 boilerplate"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/mahdikmg/vue2-web3-metamask"
+    "url": "git://github.com/mahdikmg/vue-web3-boilerplate"
   },
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -24,20 +25,20 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.25.0",
-    "vue": "^2.6.11",
-    "vue-router": "3.1.5",
-    "vuex": "3.1.2",
-    "web3": "^1.5.2"
+    "axios": "^1.4.0",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4",
+    "vuex": "^4.1.0",
+    "web3": "^4.0.3"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
+    "@babel/eslint-parser": "^7.22.9",
+    "@vue/cli-plugin-babel": "~5.0.8",
+    "@vue/cli-plugin-eslint": "~5.0.8",
+    "@vue/cli-service": "~5.0.8",
+    "@vue/compiler-sfc": "^3.3.4",
+    "eslint": "^8.46.0",
+    "eslint-plugin-vue": "^9.16.1"
   },
   "eslintConfig": {
     "root": true,
@@ -45,13 +46,16 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/vue3-essential",
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser"
     },
-    "rules": {}
+    "rules": {
+      "vue/multi-word-component-names": "off",
+      "no-unused-vars": "off"
+    }
   },
   "browserslist": [
     "> 1%",
